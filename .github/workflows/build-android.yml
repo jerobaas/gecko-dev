@@ -9,7 +9,7 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     container:
-      image: mozillamobile/firefox-android-ci:latest
+      image: mozilla-mobile/firefox-android-ci:latest  # ИСПРАВЛЕННЫЙ ОБРАЗ
 
     steps:
     - name: Checkout repository
@@ -39,7 +39,7 @@ jobs:
         ./mach package -v
 
     - name: Upload APK artifact
-      uses: actions/upload-artifact@v4  # ОБНОВЛЕНО ДО v4
+      uses: actions/upload-artifact@v4
       with:
         name: privacy-firefox-apk
         path: obj-arm-linux-androideabi/dist/fennec-*.apk
