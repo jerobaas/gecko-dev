@@ -1,0 +1,53 @@
+name: Privacy Firefox Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    container:
+      image: mozillamobile/firefox-android-ci:latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Apply fingerprint protection patch
+      run: |
+        if [ -f patches/fingerprint_protection.diff ]; then
+          git apply patches/fingerprint_protection.diff
+          echo "✅ Fingerprint protection patch applied"
+        else
+          echo "❌ Patch file not found!"
+          exit 1
+        fi
+
+    - name: Setup build environment
+      run: |
+        ./mach bootstrap --no-interactive
+        echo "ENV_SETUP_COMPLETE=true" >> $GITHUB_ENV
+
+    - name: Build Firefox for Android
+      if: env.ENV_SETUP_COMPLETE == 'true'
+      run: |
+        ./mach build
+        ./mach package -v
+
+    - name: Upload APK artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: privacy-firefox-apk
+        path: obj-arm-linux-androideabi/dist/fennec-*.apk
+        retention-days: 7
+
+    - name: Notify on success
+      if: success()
+      uses: rtCamp/action-slack-notify@v2
+      env:
+        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+        SLACK_MESSAGE: "Firefox Privacy Build #${{ github.run_number }} успешно собрана!"
