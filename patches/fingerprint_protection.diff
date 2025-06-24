@@ -1,0 +1,18 @@
+diff --git a/gfx/gl/GLContext.cpp b/gfx/gl/GLContext.cpp
+index 7f3b5f..9c1a8e 100644
+--- a/gfx/gl/GLContext.cpp
++++ b/gfx/gl/GLContext.cpp
+@@ -887,6 +887,15 @@ void GLContext::InitExtensions() {
+     if (mIsInitialized) return;
+     mIsInitialized = true;
+ 
++    // Add noise to WebGL fingerprint
++    std::srand(static_cast<unsigned>(PR_Now()));
++    mRendererString.AppendPrintf(" [Noise:%X]", std::rand() % 0xFFFF);
++    mVendorString.AppendPrintf(" [Jitter:%X]", std::rand() % 0xFFFF);
++
++    // Mask real GPU
++    mRendererString.ReplaceSubstring("660", "740");
++    mRendererString.ReplaceSubstring("Adreno (TM)", "Qualcomm");
++
+     // Original initialization code continues...
